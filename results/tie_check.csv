@@ -1,0 +1,3 @@
+protocol,pairs_with_tie,ndcg10_pessimistic,ndcg10_mid_rank
+sampled_uniform,0.1033,0.2925,0.2927
+sampled_popularity,0.1001,0.0646,0.0646

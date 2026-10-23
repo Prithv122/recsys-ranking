@@ -97,7 +97,8 @@ Protocol and wording rules were registered before the data was downloaded ([`PRE
   (tau = 1 for both). The two splits also evaluate different users (all 6,033 vs the 1,155 active at the end),
   so this shows the split choice moves the answer; it does not isolate the leak as the cause.
 - **Tie rule:** 10% of popularity's sampled pairs tie with at least one negative; mid-rank ties instead of
-  pessimistic ones move its sampled NDCG@10 by at most 0.0002, far below the gaps above.
+  pessimistic ones move its sampled NDCG@10 by at most 0.0002, far below the gaps above (post-hoc check,
+  `scripts/tie_check.py` → `results/tie_check.csv`).
 
 *Exploratory, not registered:* the models that gain under sampling recommend less popular items (mean
 popularity of the top 10: two-tower 979, ALS 1,116, BPR 1,512, popularity 1,954; two-tower uses a logQ
