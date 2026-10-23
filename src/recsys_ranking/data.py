@@ -14,8 +14,8 @@ import pandas as pd
 from recsys_ranking.types import Interactions
 
 ML1M_URL = "https://files.grouplens.org/datasets/movielens/ml-1m.zip"
-# Pin this once the owner has recorded the hash printed by the first download.
-ML1M_SHA256: str | None = None
+# Recorded from the first download on 2026-10-23 (5,917,549 bytes, 1,000,209 ratings).
+ML1M_SHA256: str | None = "a6898adb50b9ca05aa231689da44c217cb524e7ebd39d264c56e2832f2c54e20"
 
 _EXPECTED_BYTES = 5_900_000  # the archive is about 5.9 MB
 _MIN_BYTES = 1_000_000
