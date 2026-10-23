@@ -1,0 +1,5 @@
+fold,protocol_a,protocol_b,metric,k,tau,ci_lo,ci_hi,ordering_a,ordering_b
+val,full,sampled_uniform,ndcg,10,1.000,1.000,1.000,itemknn>als>popularity>random,itemknn>als>popularity>random
+test,full,sampled_uniform,ndcg,10,0.667,0.333,1.000,als>itemknn>popularity>random,itemknn>als>popularity>random
+test,full,sampled_popularity,ndcg,10,0.333,0.000,0.667,als>itemknn>popularity>random,popularity>als>itemknn>random
+loo,full,sampled_uniform,ndcg,10,1.000,1.000,1.000,itemknn>als>popularity>random,itemknn>als>popularity>random
