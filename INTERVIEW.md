@@ -37,8 +37,8 @@ takes ~15 minutes per fit on one CPU thread.
 **A:** The metric code is checked against hand-computed NDCG/MAP/MRR cases; the sampled protocol is
 deterministic per seed and independent of batch size; ALS is checked against a dense textbook solve;
 there's a leakage test on the split. Random and popularity are the baselines, and popularity is strong
-here: item-kNN does not clearly beat it. An independent review read the harness before the test fold was
-touched and found five robustness issues, the important one being that a NaN score would have ranked first
+here: item-kNN does not clearly beat it. Before the test fold was touched I ran a separate review pass over the harness with fresh
+eyes, and it found five robustness issues, the important one being that a NaN score would have ranked first
 under the sampled protocol and faked a reversal; all fixed and tested before scoring. The result: BPR wins
 on the full catalogue (NDCG@10 0.197, beats every other model), but with popularity-weighted negatives the
 tau between orderings is 0.07 [−0.07, 0.20] and 5 of 15 pairs strongly reverse; that protocol would have
@@ -55,7 +55,8 @@ Five pairs pass the strict rule under popularity-weighted sampling. The negative
 models, so the reversal can't come from one model getting easier negatives, and ties were checked: mid-rank
 ties move popularity's sampled NDCG@10 by at most 0.0002. A candidate mechanism, exploratory and untested,
 is popularity: the models that gain recommend less popular titles, which is consistent with
-popularity-weighted negatives punishing models that rank popular titles high. It's a correlation across
+popularity-weighted negatives punishing models that rank popular titles high. Item-kNN partly breaks the
+pattern (less popular picks than BPR, yet ranked below it under popularity sampling). It's a correlation across
 five models and covers only the popularity-weighted case. Also, negatives were drawn once, so the CIs
 don't include draw-to-draw variance; that's the next check I'd run.
 
@@ -68,4 +69,5 @@ of the whole catalogue. I tested whether that changes the decision. Six models o
 split, everything pre-registered. On the full catalogue BPR beats every other model (narrowly over item-kNN).
 With uniform negatives BPR stays first but the rest reorder (tau 0.47); with popularity-weighted negatives
 the ordering is far from the full one (tau 0.07, CI includes 0) and five pairs flip with confidence
-intervals excluding zero, putting a model the full catalogue ranks 5th of 6 in first place.
+intervals excluding zero, putting a model the full catalogue ranks 5th of 6 in first place. Under leave-last-out the shortcut
+agreed with the full catalogue, so the finding is specific to a time split.

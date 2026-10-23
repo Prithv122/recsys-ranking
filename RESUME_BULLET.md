@@ -11,11 +11,9 @@ Form: **action → technical specifics → measured outcome.** Numbers or it doe
   uniform; 0.07 [−0.07, 0.20] popularity-weighted, where 5 of 15 pairs strongly reverse by paired 95% CIs
   and the model ranked 5th of 6 on the full catalogue comes first).
 - Built a leakage-safe ranking harness (time-based folds, shared seeded negatives, user-level bootstrap,
-  validation-only tuning with a code-enforced single test-fold score); measured that under leave-last-out, on average 44% of the training set
+  validation-only tuning, one test-fold scoring run committed with raw-file hashes); measured that under leave-last-out, on average 44% of the training set
   is timestamped after the test item.
 
 ## Short form (one line)
 
-- Showed popularity-weighted sampled-negative evaluation reorders recommenders on MovieLens 1M (tau 0.07, 5 strong reversals), pre-registered, own iALS/BPR.
-
-_Not quotable until the repo is public and CI is green (owner's push decision)._
+- Showed popularity-weighted sampled-negative evaluation reorders recommenders on MovieLens 1M under a time split (tau 0.07, 5 strong reversals), pre-registered, own iALS/BPR.

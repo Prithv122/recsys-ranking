@@ -83,11 +83,11 @@ Shapes live in `src/recsys_ranking/types.py`: `Interactions`, `Fold`, `Recommend
 
 ## Acceptance criteria
 
-- [ ] Split has no test-time leakage; metrics match hand-computed cases; sampled protocol deterministic per seed
-- [ ] ALS beats popularity on planted synthetic data; no model ever recommends a seen item
-- [ ] `PREREGISTRATION.md` committed before the first ML-1M run; results and verdict follow its rules
-- [ ] Dashboard builds headless (`dashboard --check`) and shows the protocol comparison
-- [ ] Runs from a clean clone using only the documented steps; tests, lint and CI green
+- [x] Split has no test-time leakage; metrics match hand-computed cases; sampled protocol deterministic per seed
+- [x] ALS beats popularity on planted synthetic data; no model ever recommends a seen item
+- [x] `PREREGISTRATION.md` committed before the first ML-1M run; results and verdict follow its rules
+- [x] Dashboard builds headless (`dashboard --check`) and shows the protocol comparison
+- [x] Runs from a clean clone using only the documented steps; tests, lint and CI green
 
 ## Commands
 

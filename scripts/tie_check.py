@@ -1,6 +1,8 @@
 """Post-hoc diagnostic: does the pessimistic tie rule move popularity's sampled NDCG@10?
 
-Popularity is the only model with integer scores, so it is the only one with frequent ties.
+Popularity has integer scores, so it ties often (about 10% of its sampled pairs). Item-kNN also ties
+when the positive scores exactly 0 (about 2% of its pairs); a separate check found that mid-rank ties
+change its sampled NDCG@10 by less than 0.0001. ALS and random do not tie.
 Writes results/tie_check.csv. Run after `recsys-ranking download`.
 """
 

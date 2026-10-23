@@ -61,7 +61,7 @@ code written here.
 | Negatives | Drawn once per fold and seed, shared by every model | Fresh draws per model | The comparison under study is between models; different negatives would add noise to exactly that |
 | Tie rule in the sampled protocol | Ties count against the positive | Optimistic or mid-rank ties | A constant-score model must not look good; on this data mid-rank ties change popularity's sampled NDCG@10 by at most 0.0002 |
 | What is a "reversal" | Both pairwise CIs exclude 0, in opposite directions (pre-registered) | Any swap in point estimates | Five or six models give a coarse tau; one noisy swap of two indistinguishable models is not a reversal |
-| Tuning | Grid on the validation fold only, then one test-fold score per model, enforced in code | Tuning on test | The harness refuses to re-score a model already scored on the test fold |
+| Tuning | Grid on the validation fold only, then one test-fold score per model | Tuning on test | A guard refuses accidental re-scoring of a model already scored on the test fold; the single scored run is committed with SHA-256 hashes of its raw per-user file |
 | Published artefacts | Aggregate CSVs only | Per-user metrics | MovieLens terms forbid redistribution; per-user rows are a derivative |
 | Models | Own numpy iALS/BPR | `implicit` library | The equations are the point; ALS is checked against a dense textbook solve in the tests |
 
@@ -84,14 +84,17 @@ reordered the rest.**
 | two-tower | 0.163 [0.152, 0.175] (5) | 0.333 (2) | **0.113** (1) |
 | random | 0.010 (6) | 0.043 (6) | 0.042 (6) |
 
-Ranks are by point estimate. Under uniform sampling item-kNN and ALS are tied, and under popularity
-sampling BPR and item-kNN are tied (paired CIs include 0); under uniform sampling BPR stays first but
-two-tower is within its CI (+0.0055 [−0.0014, 0.0120]).
+Ranks are by point estimate. Under uniform sampling there is no clear difference between item-kNN and
+ALS, and under popularity sampling none between BPR and item-kNN (paired CIs include 0); under uniform
+sampling BPR stays first but two-tower is within its CI (+0.0055 [−0.0014, 0.0120]).
 
 - **Primary (full catalogue):** BPR beats every other model (paired CIs exclude 0; vs item-kNN +0.0105
-  [0.0026, 0.0185]). No clear difference between item-kNN and popularity, or between ALS and two-tower.
+  [0.0026, 0.0185]). No clear difference between item-kNN and popularity, popularity and ALS, or ALS and
+  two-tower, so ranks 2–5 are mostly indistinguishable. Popularity does beat two-tower (+0.0148
+  [0.0032, 0.0263]).
 - **Kendall tau, full vs sampled ordering:** 0.47 [0.20, 0.60] with uniform negatives; **0.07 [−0.07, 0.20]**
-  with popularity-weighted negatives. The registered null ("sampling was harmless", tau = 1) is rejected for both.
+  with popularity-weighted negatives. "Sampling was harmless" (tau = 1) was the registered outcome to
+  check against; tau is below 1 for both, with CI upper bounds of 0.60 and 0.20.
 - **Strong reversals** (both pairwise CIs exclude 0, in opposite directions): 2 of 15 pairs under uniform
   sampling (two-tower over item-kNN and over popularity), **5 of 15 under popularity sampling**. There the
   sampled protocol ranks two-tower first, a model the full catalogue places 5th and that BPR beats by
@@ -99,7 +102,8 @@ two-tower is within its CI (+0.0055 [−0.0014, 0.0120]).
 - **Leave-last-out ablation:** on average 44% of the whole training set (other users' rows) is timestamped
   after the item being tested. Its full-catalogue ordering (two-tower > ALS > item-kNN > BPR > popularity >
   random) is near-uncorrelated with the test ordering (tau −0.07, point estimate, no CI computed), and on that split the sampled protocols agree with the full one
-  (tau = 1 for both). The two splits also evaluate different users (6,033, nearly all, vs the 1,155 active at the end),
+  (tau = 1 for both; computed by the same code, but not one of the registered secondary analyses). So
+  the sampling result above holds under the time split, not under leave-last-out. The two splits also evaluate different users (6,033, nearly all, vs the 1,155 active at the end),
   so this shows the split choice moves the answer; it does not isolate the leak as the cause.
 - **Tie rule:** 10% of popularity's sampled pairs tie with at least one negative; mid-rank ties instead of
   pessimistic ones move its sampled NDCG@10 by at most 0.0002, far below the gaps above (post-hoc check,
@@ -110,13 +114,18 @@ two-tower is within its CI (+0.0055 [−0.0014, 0.0120]).
 *Exploratory, not registered:* the models that gain under sampling recommend less popular items (mean
 popularity of the top 10: two-tower 979, ALS 1,116, BPR 1,512, popularity 1,954; two-tower uses a logQ
 popularity correction). That would be consistent with popularity-weighted negatives, which are mostly
-popular titles, penalising models that rank popular titles high; it is a correlation across five models,
-not tested, and it does not explain the two reversals under uniform sampling.
+popular titles, penalising models that rank popular titles high. Item-kNN partly breaks the pattern: it
+recommends less popular titles than BPR (1,367) yet ranks below it under popularity sampling. It is a
+correlation across five models, not tested, and it does not explain the two reversals under uniform
+sampling.
 
 **Limits.** One dataset, one split, models tuned on a validation fold of only 491 users (76% of the
 validation window's rows belong to users with no earlier history and are dropped). Sampled-protocol CIs
-resample users only: negatives were drawn once with one seed, so draw-to-draw variance is not captured. ALS's best
-setting sits at the edge of the registered grid (32 factors), so ALS may be under-tuned. Movies a user rated
+resample users only: negatives were drawn once with one seed, so draw-to-draw variance is not captured.
+The registered grids are small (two values for most settings; two-tower tried only two learning rates),
+so every tuned model's best setting sits at a grid edge, and any of them may be under-tuned (ALS's best is
+its smallest factor count). The model that the popularity-weighted protocol puts first, two-tower, is one
+the popularity baseline beats on the full catalogue. Movies a user rated
 below 4 are not masked (only positives count as seen), as registered. Fit times in `results/timings.csv`
 come from a busy laptop (two-tower: 15–17 min per fit, run with `OMP_NUM_THREADS=1`) and are not a benchmark.
 

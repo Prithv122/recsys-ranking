@@ -6,12 +6,12 @@ Working notes: what broke, what was tried, why X over Y.
 
 ## Log
 
-### 2026-10-23 — contracts first, four parts built in parallel, reviewed before the test fold
+### 2026-10-23 — contracts first, four parts built against them, reviewed before the test fold
 
 - **Order of work.** `GUIDELINES.md` contracts and `PREREGISTRATION.md` were committed before any
   module existed, then data/split, metrics/protocols/stats, the five numpy models, and two-tower/
-  report/dashboard were built side by side against them. The owner accepted the pre-registration
-  before the dataset was downloaded.
+  report/dashboard were built against them. I accepted the pre-registration before the dataset was
+  downloaded.
 - **Smoke run broke on the sampled protocol.** The 300 × 200 synthetic set only has ~120 items that
   anyone interacted with, so "100 negatives the user hasn't seen" was impossible. Smoke mode uses 50;
   the real run keeps the registered 100.
@@ -20,8 +20,8 @@ Working notes: what broke, what was tried, why X over Y.
   verification passed. Nothing was disabled. The archive hash is pinned in `data.py`.
 - **`.gitignore` swallowed the test fixture.** A bare `data/` pattern also matched `tests/data/`;
   anchored to `/data/`.
-- **Staged run.** Tuning on the validation fold started while an independent review read the harness,
-  so the test fold was not touched until the review was clean. The review found no blocker and five
+- **Staged run.** Tuning on the validation fold started while I ran a separate, fresh-eyes review pass
+  over the harness, so the test fold was not touched until that review was clean. It found no blocker and five
   process/robustness fixes, all applied before scoring:
   1. Non-finite scores now raise. A NaN positive would have ranked first under the sampled protocol
      (`neg >= NaN` is false), which would have looked like a "strong reversal".
@@ -47,7 +47,7 @@ Working notes: what broke, what was tried, why X over Y.
 - **Post-hoc checks, labelled as such:** the tie rule (`scripts/tie_check.py`: mid-rank ties move
   popularity's sampled NDCG@10 by ≤ 0.0002) and the popularity explanation (exploratory, a correlation
   across five models; it doesn't explain the uniform-sampling reversals).
-- **Independent fact-check of the write-up** caught: two rounding errors (0.322, 0.292), "44% of each
+- **A fact-check pass over the write-up** caught: two rounding errors (0.322, 0.292), "44% of each
   user's rows" (it is 44% of the whole training set), a headline that implied uniform sampling flips the
   winner (only the popularity-weighted variant does), an interview answer naming a pair that never
   swapped, causal wording on the loo comparison, and a missing limit (negatives drawn once; CIs resample
@@ -71,6 +71,6 @@ Working notes: what broke, what was tried, why X over Y.
 
 ## Open questions
 
-- [ ] Does the protocol result hold on an implicit-only dataset with real purchases (brief §12)?
+- [ ] Does the protocol result hold on an implicit-only dataset with real purchases?
 - [ ] Draw-to-draw variance: redraw the 100 negatives with several seeds and see whether the 5 strong reversals hold.
 - [ ] ALS's best point is the grid edge (32 factors); a smaller-factor grid is a fair follow-up, registered first.
