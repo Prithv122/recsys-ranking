@@ -1,0 +1,6 @@
+fold,protocol_a,protocol_b,metric,k,tau,ci_lo,ci_hi,ordering_a,ordering_b
+loo,full,sampled_uniform,ndcg,10,1,0.866667,1,twotower>als>itemknn>bpr>popularity>random,twotower>als>itemknn>bpr>popularity>random
+loo,full,sampled_popularity,ndcg,10,1,0.733333,1,twotower>als>itemknn>bpr>popularity>random,twotower>als>itemknn>bpr>popularity>random
+test,full,sampled_uniform,ndcg,10,0.466667,0.2,0.6,bpr>itemknn>popularity>als>twotower>random,bpr>twotower>itemknn>als>popularity>random
+test,full,sampled_popularity,ndcg,10,0.0666667,-0.0666667,0.2,bpr>itemknn>popularity>als>twotower>random,twotower>als>bpr>itemknn>popularity>random
+test_vs_loo,full,full,ndcg,10,-0.0666667,,,bpr>itemknn>popularity>als>twotower>random,twotower>als>itemknn>bpr>popularity>random

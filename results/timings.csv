@@ -1,0 +1,13 @@
+fold,model,fit_s
+test,random,0
+test,popularity,0
+test,itemknn,1.76
+test,als,17.53
+test,bpr,145.04
+test,twotower,908.47
+loo,random,0
+loo,popularity,0
+loo,itemknn,2.3
+loo,als,23.8
+loo,bpr,154.99
+loo,twotower,1006.98
