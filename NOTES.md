@@ -42,6 +42,18 @@ Working notes: what broke, what was tried, why X over Y.
   contain ALS's optimum. Disclosed, not re-gridded (the grid is pre-registered).
 - **Torch threads.** The first two-tower tuning run used torch's default threads on a loaded machine;
   stopped before it wrote anything and restarted with `OMP_NUM_THREADS=1`.
+- **Test fold scored once** (from `4e69712`, all six models, `OMP_NUM_THREADS=1`), and the result files
+  plus SHA-256 hashes of the raw per-user file were committed (`b39e69b`) before anything was read or written up.
+- **Post-hoc checks, labelled as such:** the tie rule (`scripts/tie_check.py`: mid-rank ties move
+  popularity's sampled NDCG@10 by ≤ 0.0002) and the popularity explanation (exploratory, a correlation
+  across five models; it doesn't explain the uniform-sampling reversals).
+- **Independent fact-check of the write-up** caught: two rounding errors (0.322, 0.292), "44% of each
+  user's rows" (it is 44% of the whole training set), a headline that implied uniform sampling flips the
+  winner (only the popularity-weighted variant does), an interview answer naming a pair that never
+  swapped, causal wording on the loo comparison, and a missing limit (negatives drawn once; CIs resample
+  users only). All fixed in `1bf7b84`.
+- **Dashboard QA** in a browser: the slope chart hid the middle protocol label and drew its subtitle dark on
+  the dark theme; short labels and a mid-grey subtitle fixed both.
 - **BLAS threads.** With the machine loaded by other jobs, a small dense solve took 24 s with 12 BLAS
   threads and a fraction of a second with one; real runs set `OPENBLAS_NUM_THREADS=1`. Fit times in
   `results/` are from a busy laptop and are not a benchmark.
@@ -60,3 +72,5 @@ Working notes: what broke, what was tried, why X over Y.
 ## Open questions
 
 - [ ] Does the protocol result hold on an implicit-only dataset with real purchases (brief §12)?
+- [ ] Draw-to-draw variance: redraw the 100 negatives with several seeds and see whether the 5 strong reversals hold.
+- [ ] ALS's best point is the grid edge (32 factors); a smaller-factor grid is a fair follow-up, registered first.
