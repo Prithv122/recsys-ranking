@@ -33,6 +33,7 @@ def full_topk(
     for start in range(0, len(users), batch):
         chunk = users[start : start + batch]
         scores = np.array(model.score(chunk), dtype=np.float64)
+        _require_finite(model, scores)
         rows, cols = _seen_mask_coords(fit, chunk)
         scores[rows, cols] = -np.inf
         unseen = fold.n_items - np.bincount(rows, minlength=len(chunk))
@@ -42,6 +43,13 @@ def full_topk(
         order = np.argsort(-scores, axis=1, kind="stable")
         out[start : start + batch] = order[:, :k]
     return out
+
+
+def _require_finite(model: Recommender, scores: np.ndarray) -> None:
+    # A NaN positive would rank first under the sampled protocol and a NaN item would sort
+    # below masked seen items under the full one, so a diverged model must fail loudly.
+    if not np.isfinite(scores).all():
+        raise ValueError(f"{model.name} produced non-finite scores")
 
 
 @dataclass(frozen=True)
@@ -132,6 +140,7 @@ def sampled_ranks(model: Recommender, sampled: SampledSet, batch: int = 1024) ->
         lo, hi = np.searchsorted(sorted_inv, [start, stop])
         pair_ids = order[lo:hi]
         scores = np.asarray(model.score(users[start:stop]))
+        _require_finite(model, scores)
         local = sorted_inv[lo:hi] - start
         pos = scores[local, sampled.pos_item[pair_ids]]
         neg = scores[local[:, None], sampled.neg_items[pair_ids]]

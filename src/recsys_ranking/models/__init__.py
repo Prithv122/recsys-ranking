@@ -16,13 +16,14 @@ REGISTRY: dict[str, type] = {
     BPR.name: BPR,
 }
 
-# TwoTower needs torch (optional extra). A missing module and a missing torch both
-# surface as ImportError, and either way the model is simply not registered.
+# TwoTower needs torch (optional extra). It is left out of the registry when torch is missing;
+# the reason is kept so a run that asks for it can say why instead of dropping it silently.
+UNAVAILABLE: dict[str, str] = {}
 try:
     from .twotower import TwoTower
-except ImportError:
-    pass
+except ImportError as exc:
+    UNAVAILABLE["twotower"] = f"{type(exc).__name__}: {exc}"
 else:
     REGISTRY[TwoTower.name] = TwoTower
 
-__all__ = ["ALS", "BPR", "REGISTRY", "ItemKNN", "Popularity", "RandomModel"]
+__all__ = ["ALS", "BPR", "REGISTRY", "UNAVAILABLE", "ItemKNN", "Popularity", "RandomModel"]

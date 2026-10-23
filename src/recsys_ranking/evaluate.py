@@ -18,7 +18,7 @@ from pathlib import Path
 import numpy as np
 
 from . import metrics, protocols, stats
-from .models import REGISTRY
+from .models import REGISTRY, UNAVAILABLE
 from .split import global_time_folds, leave_last_out, loo_future_share
 from .types import Fold, Interactions
 
@@ -68,8 +68,15 @@ class Config:
     models: tuple[str, ...] | None = None  # None = every registered model
 
     def model_names(self) -> list[str]:
-        names = self.models or tuple(self.grids)
-        return [m for m in names if m in REGISTRY and m in self.grids]
+        """Models to run. An explicit request for an unknown or unavailable model is an error."""
+        if self.models is None:
+            return [m for m in self.grids if m in REGISTRY]
+        for m in self.models:
+            if m in UNAVAILABLE:
+                raise ValueError(f"model {m!r} is unavailable here ({UNAVAILABLE[m]})")
+            if m not in REGISTRY or m not in self.grids:
+                raise ValueError(f"unknown model {m!r}; known: {sorted(REGISTRY)}")
+        return list(self.models)
 
 
 def _key(fold: str, protocol: str, model: str, metric: str, k: int) -> str:
@@ -212,11 +219,14 @@ def run(
     cfg: Config | None = None,
     log: Callable[[str], None] = print,
     stage: str = "all",
+    force: bool = False,
 ) -> Path:
     """Tune on val, score test and loo, save per-user metrics, then aggregate.
 
     ``stage="tune"`` stops after writing ``tuning.csv``; ``stage="score"`` reuses that file, so
-    the test fold is touched only once the harness has been reviewed.
+    the test fold is touched only once the harness has been reviewed. Scoring merges into
+    earlier per-user results by model and refuses to re-score a model already there (the test
+    fold is scored once per model) unless ``force`` is set.
     """
     cfg = cfg or Config()
     out_dir = Path(out_dir)
@@ -234,7 +244,15 @@ def run(
             tuning = [r for r in read_tuning(path) if r["model"] not in names] + tuning
         _write_csv(
             out_dir / "tuning.csv",
-            [{**r, "params": json.dumps(r["params"], sort_keys=True)} for r in tuning],
+            # repr keeps every digit, so selection after a round-trip matches selection in memory
+            [
+                {
+                    **r,
+                    "params": json.dumps(r["params"], sort_keys=True),
+                    "val_ndcg10": repr(r["val_ndcg10"]),
+                }
+                for r in tuning
+            ],
             ["model", "config", "params", "val_ndcg10", "fit_s"],
         )
         if stage == "tune":
@@ -245,21 +263,41 @@ def run(
         raise ValueError(f"no tuning rows for {sorted(missing)}")
     chosen = {m: chosen[m] for m in cfg.model_names()}
 
-    per_user: dict[str, np.ndarray] = {}
-    catalogue: list[dict] = []
-    timings: list[dict] = []
+    raw = out_dir / "raw"
+    per_user, catalogue, timings = _load_scored(out_dir)
+    done = sorted({_parse(k)[2] for k in per_user} & set(chosen))
+    if done and not force:
+        raise ValueError(f"already scored on the test fold: {done} (pass force to re-score)")
+    per_user = {k: v for k, v in per_user.items() if _parse(k)[2] not in chosen}
+    catalogue = [r for r in catalogue if r["model"] not in chosen]
+    timings = [r for r in timings if r["model"] not in chosen]
     for fold in (test, loo):
         pu, cat, tim = score_fold(fold, chosen, cfg, log)
         per_user |= pu
         catalogue += cat
         timings += tim
-    raw = out_dir / "raw"
     raw.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(raw / "per_user.npz", **per_user)
     _write_csv(raw / "catalogue.csv", catalogue, ["fold", "model", "metric", "k", "mean"])
     _write_csv(out_dir / "timings.csv", timings, ["fold", "model", "fit_s"])
     aggregate(out_dir, cfg)
     return out_dir
+
+
+def _load_scored(out_dir: Path) -> tuple[dict[str, np.ndarray], list[dict], list[dict]]:
+    """Per-user metrics, catalogue rows and timings from an earlier scoring call, if any."""
+    raw = out_dir / "raw"
+    if not (raw / "per_user.npz").exists():
+        return {}, [], []
+    with np.load(raw / "per_user.npz") as z:
+        per_user = {k: z[k] for k in z.files}
+    with (raw / "catalogue.csv").open(encoding="utf-8") as fh:
+        catalogue = [{**r, "k": int(r["k"]), "mean": float(r["mean"])} for r in csv.DictReader(fh)]
+    timings = []
+    if (out_dir / "timings.csv").exists():
+        with (out_dir / "timings.csv").open(encoding="utf-8") as fh:
+            timings = [{**r, "fit_s": float(r["fit_s"])} for r in csv.DictReader(fh)]
+    return per_user, catalogue, timings
 
 
 def aggregate(out_dir: Path, cfg: Config | None = None) -> None:

@@ -42,8 +42,10 @@ def _cmd_evaluate(args: argparse.Namespace) -> int:
         cfg.grids = evaluate.SMOKE_GRIDS
         cfg.n_boot = 200
         cfg.n_neg = 50  # the smoke catalogue has ~120 active items
-    evaluate.run(inter, out, cfg, stage=args.stage)
-    if args.stage == "tune":
+    # Real data defaults to tuning only: scoring the test fold is a deliberate second step.
+    stage = args.stage or ("all" if args.synthetic else "tune")
+    evaluate.run(inter, out, cfg, stage=stage, force=args.force)
+    if stage == "tune":
         print(f"wrote {out / 'tuning.csv'}")
         return 0
     print(f"wrote {report.write_report(out)}")
@@ -90,9 +92,11 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument(
         "--stage",
         choices=("all", "tune", "score"),
-        default="all",
-        help="tune: val fold only; score: reuse tuning.csv and score test and loo",
+        default=None,
+        help="tune: val fold only (default on real data); score: reuse tuning.csv and score "
+        "test and loo; all: both (default with --synthetic)",
     )
+    e.add_argument("--force", action="store_true", help="allow re-scoring a scored model")
     e.set_defaults(func=_cmd_evaluate)
 
     c = sub.add_parser("compare-protocols", help="re-aggregate saved per-user metrics")
