@@ -3,6 +3,8 @@
 Committed before any MovieLens 1M number was computed. Changes after that point are amendments at
 the bottom, dated, with the reason, and never touch a rule after its result has been seen.
 
+**Status:** accepted as written by the owner on 2026-10-23, before the dataset was downloaded.
+
 ## Question
 
 Under a global-time split of MovieLens 1M, which model ranks best by **full-catalogue NDCG@10**, and
