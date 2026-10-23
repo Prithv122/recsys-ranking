@@ -1,0 +1,27 @@
+model,config,params,val_ndcg10,fit_s
+random,0,{},0.00990534,1.51e-05
+popularity,0,{},0.116512,0.0015832
+itemknn,0,"{""n_neighbors"": 50, ""shrink"": 0}",0.102754,1.7616
+itemknn,1,"{""n_neighbors"": 50, ""shrink"": 10}",0.104161,1.48802
+itemknn,2,"{""n_neighbors"": 200, ""shrink"": 0}",0.105678,1.87201
+itemknn,3,"{""n_neighbors"": 200, ""shrink"": 10}",0.106172,1.81728
+als,0,"{""alpha"": 1, ""factors"": 32, ""iterations"": 15, ""reg"": 0.01}",0.102242,16.0634
+als,1,"{""alpha"": 10, ""factors"": 32, ""iterations"": 15, ""reg"": 0.01}",0.0964036,13.2151
+als,2,"{""alpha"": 1, ""factors"": 32, ""iterations"": 15, ""reg"": 0.1}",0.102076,12.8858
+als,3,"{""alpha"": 10, ""factors"": 32, ""iterations"": 15, ""reg"": 0.1}",0.0971839,11.4382
+als,4,"{""alpha"": 1, ""factors"": 64, ""iterations"": 15, ""reg"": 0.01}",0.0944752,32.4823
+als,5,"{""alpha"": 10, ""factors"": 64, ""iterations"": 15, ""reg"": 0.01}",0.0917686,31.5432
+als,6,"{""alpha"": 1, ""factors"": 64, ""iterations"": 15, ""reg"": 0.1}",0.0952165,39.7775
+als,7,"{""alpha"": 10, ""factors"": 64, ""iterations"": 15, ""reg"": 0.1}",0.09021,37.7919
+als,8,"{""alpha"": 1, ""factors"": 128, ""iterations"": 15, ""reg"": 0.01}",0.0831792,121.872
+als,9,"{""alpha"": 10, ""factors"": 128, ""iterations"": 15, ""reg"": 0.01}",0.0908964,143.401
+als,10,"{""alpha"": 1, ""factors"": 128, ""iterations"": 15, ""reg"": 0.1}",0.0832763,138.371
+als,11,"{""alpha"": 10, ""factors"": 128, ""iterations"": 15, ""reg"": 0.1}",0.092359,100.137
+bpr,0,"{""epochs"": 30, ""factors"": 32, ""lr"": 0.01, ""reg"": 0.0001}",0.126417,65.9002
+bpr,1,"{""epochs"": 30, ""factors"": 32, ""lr"": 0.01, ""reg"": 0.001}",0.126776,77.3471
+bpr,2,"{""epochs"": 30, ""factors"": 32, ""lr"": 0.05, ""reg"": 0.0001}",0.0946491,53.9659
+bpr,3,"{""epochs"": 30, ""factors"": 32, ""lr"": 0.05, ""reg"": 0.001}",0.0943105,57.9609
+bpr,4,"{""epochs"": 30, ""factors"": 64, ""lr"": 0.01, ""reg"": 0.0001}",0.12685,82.0128
+bpr,5,"{""epochs"": 30, ""factors"": 64, ""lr"": 0.01, ""reg"": 0.001}",0.126881,86.2949
+bpr,6,"{""epochs"": 30, ""factors"": 64, ""lr"": 0.05, ""reg"": 0.0001}",0.1002,84.3107
+bpr,7,"{""epochs"": 30, ""factors"": 64, ""lr"": 0.05, ""reg"": 0.001}",0.0997293,69.7396
