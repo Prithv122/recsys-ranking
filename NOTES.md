@@ -33,6 +33,15 @@ Working notes: what broke, what was tried, why X over Y.
   5. On real data `evaluate` defaults to `--stage tune`; scoring the test fold is a separate, explicit command.
 - **The first tuning run predates fix 4**, so its `tuning.csv` is rounded to 6 significant digits; it was
   checked for ties created by rounding before scoring (see below).
+- **Rounding check (fix 4) passed.** Within every model the 6-digit `val_ndcg10` values are all distinct
+  (closest pair: BPR 0.12685 vs 0.126881), so the rounded file selects exactly what the in-memory run
+  would have.
+- **Validation fold surprises.** Popularity (0.1165) beat item-kNN (0.1062) and ALS (0.1022) on val
+  NDCG@10; BPR was best (0.1269). Only 491 evaluation users, so this is noisy. ALS's best point is the
+  smallest factor count in the grid (32) and the larger grids got worse: the registered grid may not
+  contain ALS's optimum. Disclosed, not re-gridded (the grid is pre-registered).
+- **Torch threads.** The first two-tower tuning run used torch's default threads on a loaded machine;
+  stopped before it wrote anything and restarted with `OMP_NUM_THREADS=1`.
 - **BLAS threads.** With the machine loaded by other jobs, a small dense solve took 24 s with 12 BLAS
   threads and a fraction of a second with one; real runs set `OPENBLAS_NUM_THREADS=1`. Fit times in
   `results/` are from a busy laptop and are not a benchmark.
