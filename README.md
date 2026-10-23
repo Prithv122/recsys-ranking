@@ -100,6 +100,8 @@ Protocol and wording rules were registered before the data was downloaded ([`PRE
   pessimistic ones move its sampled NDCG@10 by at most 0.0002, far below the gaps above (post-hoc check,
   `scripts/tie_check.py` → `results/tie_check.csv`).
 
+![Model rank under each protocol, test fold (local Streamlit dashboard)](docs/dashboard-rank-slope.jpg)
+
 *Exploratory, not registered:* the models that gain under sampling recommend less popular items (mean
 popularity of the top 10: two-tower 979, ALS 1,116, BPR 1,512, popularity 1,954; two-tower uses a logQ
 popularity correction). Popularity-weighted negatives are mostly popular titles, so they penalise exactly

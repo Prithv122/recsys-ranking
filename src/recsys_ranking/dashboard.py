@@ -66,7 +66,18 @@ def _slope_chart(nd: pd.DataFrame, ordering: pd.DataFrame, fold: str) -> alt.Cha
     if taus:
         sub = "Kendall tau vs full: " + "; ".join(taus)
     base = alt.Chart(ranks).encode(
-        x=alt.X("protocol:N", sort=PROTOCOLS, title="Protocol", axis=alt.Axis(labelAngle=0)),
+        x=alt.X(
+            "protocol:N",
+            sort=PROTOCOLS,
+            title="Protocol (uniform / popularity = 100 sampled negatives)",
+            # Short labels so all three fit; Vega otherwise hides overlapping ones.
+            axis=alt.Axis(
+                labelAngle=0,
+                labelOverlap=False,
+                labelLimit=0,
+                labelExpr="replace(datum.label, 'sampled_', '')",
+            ),
+        ),
         y=alt.Y("rank:Q", scale=alt.Scale(reverse=True, domainMin=1), title="Rank (1 = best)"),
         color=alt.Color("model:N", title="Model"),
     )
@@ -75,7 +86,10 @@ def _slope_chart(nd: pd.DataFrame, ordering: pd.DataFrame, fold: str) -> alt.Cha
         tooltip=["model", "protocol", "rank", "mean"]
     )
     return (lines + points).properties(
-        title=alt.TitleParams(f"Model rank by protocol ({fold} fold)", subtitle=sub),
+        # Streamlit's theme colours titles but not subtitles; mid grey reads on light and dark.
+        title=alt.TitleParams(
+            f"Model rank by protocol ({fold} fold)", subtitle=sub, subtitleColor="#8a8f98"
+        ),
         width=420,
         height=320,
     )
