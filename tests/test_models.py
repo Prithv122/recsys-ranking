@@ -6,7 +6,8 @@ import numpy as np
 import pytest
 import scipy.sparse as sp
 
-from recsys_ranking.models import REGISTRY
+from recsys_ranking import evaluate
+from recsys_ranking.models import REGISTRY, UNAVAILABLE
 from recsys_ranking.models.als import ALS
 from recsys_ranking.models.bpr import BPR
 from recsys_ranking.models.itemknn import ItemKNN
@@ -65,6 +66,21 @@ def test_registry_has_core_models() -> None:
     assert {"random", "popularity", "itemknn", "als", "bpr"} <= set(REGISTRY)
     for name, cls in REGISTRY.items():
         assert cls.name == name
+
+
+def test_registry_and_grids_agree() -> None:
+    """Every runnable model has a registered grid, and every grid point builds its model."""
+    assert not set(REGISTRY) & set(UNAVAILABLE)  # a model is available or has a reason, not both
+    known = {*REGISTRY, *UNAVAILABLE}
+    for grids in (evaluate.GRIDS, evaluate.SMOKE_GRIDS):
+        assert set(grids) == known
+        for name, points in grids.items():
+            assert points, name
+            if name in REGISTRY:
+                for params in points:
+                    assert REGISTRY[name](**params, seed=0).params()["seed"] == 0, (name, params)
+    # evaluate's default model order is its grid order restricted to what is registered
+    assert evaluate.Config().model_names() == [m for m in evaluate.GRIDS if m in REGISTRY]
 
 
 @pytest.mark.parametrize("name", list(CONFIGS))

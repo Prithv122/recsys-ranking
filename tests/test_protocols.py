@@ -120,6 +120,27 @@ def test_full_topk_raises_when_fewer_than_k_unseen():
         full_topk(FixedModel(np.ones((1, 4))), fold, np.array([0]), k=2)
 
 
+def test_non_finite_scores_fail_loudly_in_both_protocols():
+    fold = random_fold(n_users=6, n_items=60, seed=12)
+    sampled = sample_negatives(fold, n_neg=20, seed=1)
+    users = np.arange(6)
+    clean = np.random.default_rng(0).random((6, 60))
+    assert full_topk(FixedModel(clean), fold, users, k=5).shape == (6, 5)  # the control passes
+    for bad in (np.nan, np.inf):
+        scores = clean.copy()
+        scores[3, 41] = bad  # one cell in one row is enough
+        model = FixedModel(scores)
+        with pytest.raises(ValueError, match="non-finite"):
+            full_topk(model, fold, users, k=5)
+        with pytest.raises(ValueError, match="non-finite"):
+            sampled_ranks(model, sampled)
+    all_nan = FixedModel(np.full((6, 60), np.nan))
+    with pytest.raises(ValueError, match="non-finite"):
+        full_topk(all_nan, fold, users, k=5)
+    with pytest.raises(ValueError, match="non-finite"):
+        sampled_ranks(all_nan, sampled)
+
+
 # --- sample_negatives --------------------------------------------------------------------
 
 
