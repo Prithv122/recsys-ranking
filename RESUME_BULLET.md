@@ -6,25 +6,16 @@ Form: **action → technical specifics → measured outcome.** Numbers or it doe
 
 ## Bullets
 
-- _..._
-- _..._
+- Pre-registered and ran a recommender evaluation study on MovieLens 1M (6 models incl. own numpy iALS and
+  BPR-MF, a torch two-tower) under a global time split; showed the common 100-sampled-negatives protocol
+  changes the model decision: Kendall tau 0.07 [−0.07, 0.20] vs full-catalogue NDCG@10 and 5 of 15 pairs
+  reversed with paired 95% CIs, promoting the 5th-best model to 1st.
+- Built a leakage-safe ranking harness (time-based folds, shared seeded negatives, user-level bootstrap,
+  validation-only tuning with a code-enforced single test-fold score); measured that leave-last-out trains on
+  data later than the test item for 44% of rows and yields an unrelated model ordering (tau −0.07).
 
-## Which roles this supports
+## Short form (one line)
 
-- [ ] Data Scientist / ML
-- [ ] AI Engineer (LLM/NLP/CV)
-- [ ] Data Engineer
-- [ ] Data Analyst / Python Developer
+- Showed sampled-negative evaluation reorders recommenders on MovieLens 1M (tau 0.07, 5 strong reversals), pre-registered, own iALS/BPR.
 
-## Keywords this project earns
-
-_Only list what you actually used and could be questioned on._
-
----
-
-### Bad vs good
-
-❌ "Built a machine learning model to predict customer churn using Python."
-✅ "Built a churn classifier on 240k accounts (LightGBM, 1:40 class imbalance) with isotonic calibration and cost-sensitive thresholding, lifting precision@10% from 0.31 to 0.58 over the business's existing rules baseline."
-
-The second one is answerable in an interview. The first invites the question you can't answer.
+_Not quotable until the repo is public and CI is green (owner's push decision)._
