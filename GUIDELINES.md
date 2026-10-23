@@ -42,7 +42,9 @@ Shapes live in `src/recsys_ranking/types.py`: `Interactions`, `Fold`, `Recommend
   `val`: fit `ts < t_val`, truth `t_val <= ts < t_test`. `test`: fit `ts < t_test`, truth `ts >= t_test`.
   `leave_last_out(inter) -> Fold` (name `"loo"`): each user's latest positive (ties: larger item id) is truth,
   users with fewer than 2 positives are fit-only. Every fold is reindexed from its fit rows (see `Fold`).
-  `loo_future_share(inter) -> float`: mean, over loo truth pairs, of the share of loo fit rows with a later timestamp (the leak size).
+  `loo_future_share(inter) -> float`: mean, over loo truth pairs, of the share of loo fit rows with a later timestamp (the leak size), over truth pairs that survive into the fold.
+  Split functions take positives only (`positives(load_ml1m(...))`); cutoffs use `np.quantile(method="lower")`,
+  so a timestamp tie at a cutoff lands on the truth side. Synthetic raw ids are 0-based and index `truth_affinity`.
 - **metrics.py** — per-user arrays, binary relevance. `recs`: int64 `(n, k)` item indices, best first;
   `truth`: list of n int arrays. `recall_at_k` = hits / |truth|; `ndcg_at_k` with IDCG over
   `min(k, |truth|)`, gain `1/log2(rank+1)`; `map_at_k` = sum of precision@i at hits / `min(k, |truth|)`;

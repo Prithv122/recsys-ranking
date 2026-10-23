@@ -46,5 +46,6 @@ Thumbs.db
 .idea/
 
 # MovieLens terms forbid redistribution: data and per-user derivatives stay local
-data/
-results/raw/
+/data/
+/results/raw/
+/results/synthetic/
