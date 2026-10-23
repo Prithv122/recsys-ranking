@@ -44,3 +44,7 @@ mlruns/
 Thumbs.db
 .vscode/
 .idea/
+
+# MovieLens terms forbid redistribution: data and per-user derivatives stay local
+data/
+results/raw/
