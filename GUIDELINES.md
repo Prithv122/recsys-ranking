@@ -94,7 +94,9 @@ Shapes live in `src/recsys_ranking/types.py`: `Interactions`, `Fold`, `Recommend
 ```
 uv sync --all-groups --extra dashboard
 uv run recsys-ranking evaluate --synthetic --smoke
-uv run recsys-ranking download ; uv run recsys-ranking evaluate
+uv run recsys-ranking download
+uv run recsys-ranking evaluate                 # real data: tunes on val only
+uv run recsys-ranking evaluate --stage score   # scores test + loo once; refuses a re-score
 uv run pytest ; uv run ruff check . ; uv run ruff format --check .
 ```
 
