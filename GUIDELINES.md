@@ -42,6 +42,7 @@ Shapes live in `src/recsys_ranking/types.py`: `Interactions`, `Fold`, `Recommend
   `val`: fit `ts < t_val`, truth `t_val <= ts < t_test`. `test`: fit `ts < t_test`, truth `ts >= t_test`.
   `leave_last_out(inter) -> Fold` (name `"loo"`): each user's latest positive (ties: larger item id) is truth,
   users with fewer than 2 positives are fit-only. Every fold is reindexed from its fit rows (see `Fold`).
+  `loo_future_share(inter) -> float`: mean, over loo truth pairs, of the share of loo fit rows with a later timestamp (the leak size).
 - **metrics.py** — per-user arrays, binary relevance. `recs`: int64 `(n, k)` item indices, best first;
   `truth`: list of n int arrays. `recall_at_k` = hits / |truth|; `ndcg_at_k` with IDCG over
   `min(k, |truth|)`, gain `1/log2(rank+1)`; `map_at_k` = sum of precision@i at hits / `min(k, |truth|)`;
@@ -49,7 +50,8 @@ Shapes live in `src/recsys_ranking/types.py`: `Interactions`, `Fold`, `Recommend
   `mean_popularity(recs, item_pop)`, `gini_exposure(recs, n_items)` (0 = equal exposure).
 - **protocols.py** — `full_topk(model, fold, users, k, batch=1024) -> recs`: seen-in-fit items set to `-inf`,
   ties broken by lower item index (stable sort on `-score`).
-  `sample_negatives(fold, n_neg=100, scheme="uniform"|"popularity", seed) -> SampledSet`: one row per
+  `sample_negatives(fold, n_neg=100, scheme="uniform"|"popularity", seed) -> SampledSet` (dataclass: `user_idx` dense user of each pair, `pos_item`,
+  `neg_items` (n_pairs, n_neg), `scheme`, `seed`): one row per
   (eval user, truth item) pair, `n_neg` items drawn without replacement from items not in the user's fit
   or truth; popularity scheme draws ∝ fit item count. Depends only on the fold and seed, never on a model,
   so every model is ranked against identical negatives. `sampled_ranks(model, sampled) -> int array`:
@@ -69,7 +71,11 @@ Shapes live in `src/recsys_ranking/types.py`: `Interactions`, `Fold`, `Recommend
   and aggregates to `results/summary.csv` with columns
   `fold, protocol, model, metric, k, mean, ci_lo, ci_hi, n_users` (`protocol` ∈ `full`, `sampled_uniform`,
   `sampled_popularity`; catalogue metrics have empty CIs) and `results/ordering.csv`
-  (`fold, protocol_a, protocol_b, metric, k, tau, ci_lo, ci_hi, ordering_a, ordering_b`).
+  (`fold, protocol_a, protocol_b, metric, k, tau, ci_lo, ci_hi, ordering_a, ordering_b`; orderings are
+  model names joined by `>` best first) and `results/pairs.csv`
+  (`fold, protocol, metric, k, model_a, model_b, diff, ci_lo, ci_hi`; diff = a − b, paired bootstrap).
+  `report.py` turns these three files into `results/REPORT.md` mechanically, using the wording rules in
+  `PREREGISTRATION.md`.
 - **cli.py** — `recsys-ranking download | evaluate | compare-protocols | dashboard [--check]`;
   `evaluate --synthetic --smoke` runs end to end on synthetic data in seconds.
 
