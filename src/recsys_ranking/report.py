@@ -191,7 +191,15 @@ def verdict(results_dir: Path | str, fold: str = "test") -> dict[str, Any]:
         "sampling_harmless": harmless,
         "catalogue": catalogue,
         "loo": _loo(summary, ordering, models),
+        "folds": _folds(Path(results_dir) / "folds.csv"),
     }
+
+
+def _folds(path: Path) -> list[dict[str, Any]]:
+    """Fold sizes and dropped-row counts written by the evaluation run, if present."""
+    if not path.exists():
+        return []
+    return pd.read_csv(path).to_dict("records")
 
 
 def _loo(summary: pd.DataFrame, ordering: pd.DataFrame, test_models: list[str]) -> dict | None:
@@ -260,7 +268,27 @@ def render(v: dict[str, Any]) -> str:
         "",
     ]
 
-    if v["fold_sizes"]:
+    if v.get("folds"):
+        L += [
+            "## Folds",
+            "",
+            "| Fold | Users | Items | Fit rows | Truth rows | Eval users "
+            "| Cold-user rows | Cold-item rows | Seen-pair rows |",
+            "|---|---|---|---|---|---|---|---|---|",
+        ]
+        cols = ("n_users", "n_items", "n_fit", "n_truth", "n_eval_users",
+                "cold_user_rows", "cold_item_rows", "seen_pair_rows")  # fmt: skip
+        L += [f"| {r['fold']} | " + " | ".join(str(int(r[c])) for c in cols) + " |"
+              for r in v["folds"]]  # fmt: skip
+        share = [r["future_share"] for r in v["folds"] if r["fold"] == "loo"]
+        if share and pd.notna(share[0]):
+            L.append("")
+            L.append(
+                f"Leak size on `loo`: on average {share[0]:.1%} of fit rows are later "
+                "than the truth pair they are evaluated against."
+            )
+        L.append("")
+    elif v["fold_sizes"]:
         L += ["## Fold sizes", "", "| Fold | Evaluation users |", "|---|---|"]
         L += [f"| {f} | {n} |" for f, n in v["fold_sizes"].items()]
         L.append("")

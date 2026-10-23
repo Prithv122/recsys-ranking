@@ -1,0 +1,4 @@
+fold,n_users,n_items,n_fit,n_truth,n_eval_users,cold_user_rows,cold_item_rows,seen_pair_rows,future_share
+val,5378,3468,460224,13632,491,43883,11,0,
+test,5975,3489,517750,52175,1155,5257,99,0,
+loo,6038,3529,569244,6033,6033,0,4,0,0.442354
