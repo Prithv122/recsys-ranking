@@ -16,8 +16,8 @@
 
 A product team choosing between recommenders needs the offline ranking of models to match the order
 they would see if users were shown the whole catalogue. Many papers and tutorials instead rank each
-held-out item against 100 randomly sampled items, which is ~37× cheaper on this catalogue but can
-reorder models. Picking the wrong model from a cheap metric ships the wrong recommender. This
+held-out item against 100 sampled items (~35× fewer candidates than this 3,489-item catalogue), which
+is cheap but can reorder models. Picking the wrong model from a cheap metric ships the wrong recommender. This
 project measures, on one public dataset, whether that shortcut changes the decision.
 
 ## 2. The data
@@ -67,21 +67,26 @@ code written here.
 
 ## 5. Results
 
-All numbers: MovieLens 1M, one global time split (test = the last 10% of positives by time,
-1,155 evaluation users), CPU-sized models, 2,000-resample user bootstrap, 95% intervals. Source files:
+All numbers: MovieLens 1M, one global time split (test = the last 10% of positives by time: 52,175
+truth rows from 1,155 evaluation users after dropping 5,356 cold-user/cold-item rows), CPU-sized models, 2,000-resample user bootstrap, 95% intervals. Source files:
 [`results/REPORT.md`](results/REPORT.md) (generated mechanically), `summary.csv`, `pairs.csv`, `ordering.csv`.
 Protocol and wording rules were registered before the data was downloaded ([`PREREGISTRATION.md`](PREREGISTRATION.md)).
 
-**The cheap protocol would have changed the decision.**
+**Popularity-weighted sampling would have changed the decision; uniform sampling kept the same winner but
+reordered the rest.**
 
 | Model | Full-catalogue NDCG@10 (rank) | 100 uniform negatives (rank) | 100 popularity-weighted negatives (rank) |
 |---|---|---|---|
 | BPR-MF | **0.197** [0.184, 0.210] (1) | 0.338 (1) | 0.093 (3) |
-| item-kNN | 0.186 [0.173, 0.199] (2) | 0.323 (3) | 0.093 (4) |
-| popularity | 0.178 [0.165, 0.192] (3) | 0.293 (5) | 0.065 (5) |
+| item-kNN | 0.186 [0.173, 0.199] (2) | 0.322 (3) | 0.093 (4) |
+| popularity | 0.178 [0.165, 0.192] (3) | 0.292 (5) | 0.065 (5) |
 | implicit ALS | 0.168 [0.156, 0.179] (4) | 0.319 (4) | 0.108 (2) |
 | two-tower | 0.163 [0.152, 0.175] (5) | 0.333 (2) | **0.113** (1) |
 | random | 0.010 (6) | 0.043 (6) | 0.042 (6) |
+
+Ranks are by point estimate. Under uniform sampling item-kNN and ALS are tied, and under popularity
+sampling BPR and item-kNN are tied (paired CIs include 0); under uniform sampling BPR stays first but
+two-tower is within its CI (+0.0055 [−0.0014, 0.0120]).
 
 - **Primary (full catalogue):** BPR beats every other model (paired CIs exclude 0; vs item-kNN +0.0105
   [0.0026, 0.0185]). No clear difference between item-kNN and popularity, or between ALS and two-tower.
@@ -91,10 +96,10 @@ Protocol and wording rules were registered before the data was downloaded ([`PRE
   sampling (two-tower over item-kNN and over popularity), **5 of 15 under popularity sampling**. There the
   sampled protocol ranks two-tower first, a model the full catalogue places 5th and that BPR beats by
   0.0334 [0.0235, 0.0437].
-- **Leave-last-out ablation:** on average 44% of each user's training rows are later than the item they are
-  tested on. Its full-catalogue ordering (two-tower > ALS > item-kNN > BPR > popularity > random) is
-  unrelated to the test ordering (tau −0.07), and on that split the sampled protocols agree with the full one
-  (tau = 1 for both). The two splits also evaluate different users (all 6,033 vs the 1,155 active at the end),
+- **Leave-last-out ablation:** on average 44% of the whole training set (other users' rows) is timestamped
+  after the item being tested. Its full-catalogue ordering (two-tower > ALS > item-kNN > BPR > popularity >
+  random) is near-uncorrelated with the test ordering (tau −0.07, point estimate, no CI computed), and on that split the sampled protocols agree with the full one
+  (tau = 1 for both). The two splits also evaluate different users (6,033, nearly all, vs the 1,155 active at the end),
   so this shows the split choice moves the answer; it does not isolate the leak as the cause.
 - **Tie rule:** 10% of popularity's sampled pairs tie with at least one negative; mid-rank ties instead of
   pessimistic ones move its sampled NDCG@10 by at most 0.0002, far below the gaps above (post-hoc check,
@@ -104,13 +109,16 @@ Protocol and wording rules were registered before the data was downloaded ([`PRE
 
 *Exploratory, not registered:* the models that gain under sampling recommend less popular items (mean
 popularity of the top 10: two-tower 979, ALS 1,116, BPR 1,512, popularity 1,954; two-tower uses a logQ
-popularity correction). Popularity-weighted negatives are mostly popular titles, so they penalise exactly
-the models that rank popular titles high, and favour the ones that don't.
+popularity correction). That would be consistent with popularity-weighted negatives, which are mostly
+popular titles, penalising models that rank popular titles high; it is a correlation across five models,
+not tested, and it does not explain the two reversals under uniform sampling.
 
-**Limits.** One dataset, one split, models tuned on a validation fold of only 491 users. ALS's best
+**Limits.** One dataset, one split, models tuned on a validation fold of only 491 users (76% of the
+validation window's rows belong to users with no earlier history and are dropped). Sampled-protocol CIs
+resample users only: negatives were drawn once with one seed, so draw-to-draw variance is not captured. ALS's best
 setting sits at the edge of the registered grid (32 factors), so ALS may be under-tuned. Movies a user rated
 below 4 are not masked (only positives count as seen), as registered. Fit times in `results/timings.csv`
-come from a busy laptop (two-tower: ~15 min per fit on one CPU thread) and are not a benchmark.
+come from a busy laptop (two-tower: 15–17 min per fit, run with `OMP_NUM_THREADS=1`) and are not a benchmark.
 
 ## 6. How to run
 

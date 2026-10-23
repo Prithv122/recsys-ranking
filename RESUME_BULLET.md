@@ -7,15 +7,15 @@ Form: **action → technical specifics → measured outcome.** Numbers or it doe
 ## Bullets
 
 - Pre-registered and ran a recommender evaluation study on MovieLens 1M (6 models incl. own numpy iALS and
-  BPR-MF, a torch two-tower) under a global time split; showed the common 100-sampled-negatives protocol
-  changes the model decision: Kendall tau 0.07 [−0.07, 0.20] vs full-catalogue NDCG@10 and 5 of 15 pairs
-  reversed with paired 95% CIs, promoting the 5th-best model to 1st.
+  BPR-MF, a torch two-tower) under a global time split; showed 100-sampled-negative evaluation reorders models (Kendall tau 0.47
+  uniform; 0.07 [−0.07, 0.20] popularity-weighted, where 5 of 15 pairs strongly reverse by paired 95% CIs
+  and the model ranked 5th of 6 on the full catalogue comes first).
 - Built a leakage-safe ranking harness (time-based folds, shared seeded negatives, user-level bootstrap,
-  validation-only tuning with a code-enforced single test-fold score); measured that leave-last-out trains on
-  data later than the test item for 44% of rows and yields an unrelated model ordering (tau −0.07).
+  validation-only tuning with a code-enforced single test-fold score); measured that under leave-last-out, on average 44% of the training set
+  is timestamped after the test item.
 
 ## Short form (one line)
 
-- Showed sampled-negative evaluation reorders recommenders on MovieLens 1M (tau 0.07, 5 strong reversals), pre-registered, own iALS/BPR.
+- Showed popularity-weighted sampled-negative evaluation reorders recommenders on MovieLens 1M (tau 0.07, 5 strong reversals), pre-registered, own iALS/BPR.
 
 _Not quotable until the repo is public and CI is green (owner's push decision)._
